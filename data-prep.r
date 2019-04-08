@@ -1,5 +1,5 @@
 
-#Loading our two data sets which will need to be joined. We can use fread instead of 
+#Loading our data set which will need to be joined. We can use fread instead of 
 #read.csv becasue it is much faster. 
 #we will also convert our data to a tibble data frame to make manipulating it easier
 library(data.table)
@@ -65,11 +65,24 @@ tb_contact_demo$Date_of_Service_end
 
 #Calculating service era
 tb_contact_demo$last_service_era <- ifelse(tb_contact_demo$Date_of_Service_end > world_war_1_era_start & tb_contact_demo$Date_of_Service_end < world_war_1_era_end, "World_War_1_era",
-                                        ifelse(tb_contact_demo$Date_of_Service_end > world_war_2_era_start & tb_contact_demo$Date_of_Service_end < world_war_2_era_end, "World_War_2_era",
-                                               ifelse(tb_contact_demo$Date_of_Service_end > korean_conflict_era_start & tb_contact_demo$Date_of_Service_end < korean_conflict_era_end, "korean_conflict_era",
-                                                      ifelse(tb_contact_demo$Date_of_Service_end > vietnam_era_start & tb_contact_demo$Date_of_Service_end < vietnam_era_end, "vietnam_era",
-                                                             ifelse(tb_contact_demo$Date_of_Service_end > gulf_war_era_start & tb_contact_demo$Date_of_Service_end < gulf_war_era_end, "gulf_war_era",
-                                        "peace_time")))))
+                                    ifelse(tb_contact_demo$Date_of_Service_end > world_war_2_era_start & tb_contact_demo$Date_of_Service_end < world_war_2_era_end, "World_War_2_era",
+                                    ifelse(tb_contact_demo$Date_of_Service_end > korean_conflict_era_start & tb_contact_demo$Date_of_Service_end < korean_conflict_era_end, "korean_conflict_era",
+                                    ifelse(tb_contact_demo$Date_of_Service_end > vietnam_era_start & tb_contact_demo$Date_of_Service_end < vietnam_era_end, "vietnam_era",
+                                    ifelse(tb_contact_demo$Date_of_Service_end > gulf_war_era_start & tb_contact_demo$Date_of_Service_end < gulf_war_era_end, "gulf_war_era",
+                                    "peace_time")))))
+
+# #alternate service era categores separating specific peace time designations
+# tb_contact_demo$last_service_era <- ifelse(tb_contact_demo$Date_of_Service_end >= world_war_1_era_start & tb_contact_demo$Date_of_Service_end <= world_war_1_era_end, "World_War_1_era",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end > world_war_1_era_end & tb_contact_demo$Date_of_Service_end < world_war_2_era_start, "post_ww1_peacetime",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end >= world_war_2_era_start & tb_contact_demo$Date_of_Service_end <= world_war_2_era_end, "World_War_2_era",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end > world_war_2_era_end & tb_contact_demo$Date_of_Service_end < korean_conflict_era_start, "post_ww2_peacetime",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end >= korean_conflict_era_start & tb_contact_demo$Date_of_Service_end <= korean_conflict_era_end, "korean_conflict_era",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end > korean_conflict_era_end & tb_contact_demo$Date_of_Service_end < vietnam_era_start, "post_korea_peacetime",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end >= vietnam_era_start & tb_contact_demo$Date_of_Service_end <= vietnam_era_end, "vietnam_era",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end > vietnam_era_end & tb_contact_demo$Date_of_Service_end < gulf_war_era_start, "post_vietnam_peacetime",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end >= gulf_war_era_start & tb_contact_demo$Date_of_Service_end <= gulf_war_era_end, "gulf_war_era",
+#                                     ifelse(tb_contact_demo$Date_of_Service_end > Sys.Date(),"currently_serving","bad_data"))))))))))
+
 
 
 head(tb_contact_demo$last_service_era)

@@ -1,16 +1,15 @@
+setwd('<INSERT WORKING DIRECTORY HERE>')
 
-#Loading our data set which will need to be joined. We can use fread instead of 
-#read.csv becasue it is much faster. 
+#Loading our data set. We can use fread instead of read.csv becasue it is much faster. 
 #we will also convert our data to a tibble data frame to make manipulating it easier
 library(data.table)
 
-data_contact <- fread("Data/SalesForce_Contact.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
+data_contact <- fread("SalesForce_Contact.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
 
 #install.packages("tidyverse")
 library(tidyverse)
 
 tb_contact <-as_tibble(data_contact)
-tb_hire <- as_tibble(data_hire)
 
 #We are only concerned with demographic data
 #We can pare down the Contact data set to only usable columns
@@ -18,6 +17,7 @@ tb_hire <- as_tibble(data_hire)
 colnames(data_contact)
 
 demographics <- c("Id",
+                  "Client__c",
                   "Race__c",
                   "Gender__c",
                   "Service_Branch__c",
@@ -32,6 +32,8 @@ demographics <- c("Id",
                   "Willing_to_Relocate__c",
                   "Enrolled_in_School__c",
                   "priority_veteran__c",
+                  "Highest_Level_of_Education_Completed__c",
+                  "Status__c",
                   "Hire_Heroes_USA_Confirmed_Hire__c")
 
 
@@ -130,46 +132,104 @@ tb_contact_demo$Length_of_Service_bin <- as.factor(ifelse(tb_contact_demo$Length
                                                 ifelse(tb_contact_demo$Length_of_Service<=length_15,15,NA))))))))))))))))
 summary(tb_contact_demo$Length_of_Service_bin)
 
+#Filtering our data so that only "clients" are considered
+tb_contact_demo_c <- filter(tb_contact_demo, Client__c == 1)
+
+
+#From Kayla's code_______________________________________________________________________________________________________
+# #subsetting variables to filter
+# 
+# cleaned_data <- filter(tb_contact_demo,Highest_Level_of_Education_Completed__c  == "High School/GED"|
+#                          Highest_Level_of_Education_Completed__c  == "2 Year Degree (AA, AS, etc.)"|
+#                          Highest_Level_of_Education_Completed__c  == "4 Year Degree (BA, BS, etc.)"|
+#                          Highest_Level_of_Education_Completed__c  == "Post-Graduate Degree (MA, MS, JD, etc.)"|
+#                          Highest_Level_of_Education_Completed__c  == "Doctorate (PhD, MD, etc.)")
+# 
+# 
+# 
+# cleaned_data_1 <- filter(tb_contact_demo,Service_Branch__c  == "Air Force"|
+#                            Service_Branch__c  == "Army"|
+#                            Service_Branch__c  == "Coast Guard"|
+#                            Service_Branch__c == "Marines"|
+#                            Service_Branch__c == "Navy"
+# )
+# 
+# cleaned_data_2 <- filter(tb_contact_demo, Purple_Heart_Recipient__c  == "NO"|
+#                            Purple_Heart_Recipient__c  == "Yes"
+# )
+# 
+# cleaned_data_3 <- filter(tb_contact_demo, Status__c  == "Unemployed"|
+#                            Status__c  == "Active Duty"|
+#                            Status__c  == "Employed"|
+#                            Status__c  == "Under employed - Insufficient income")
+#___________________________________________________________________________________________________________________________
 
 
 #We can now create a final cleaned data set for our analysis. 
-colnames(tb_contact_demo)
+colnames(tb_contact_demo_c)
 #eliminating unused columns
-cleaned_data <- tb_contact_demo
+cleaned_data <- tb_contact_demo_c
+
 cleaned_data$Id <- NULL
+cleaned_data$Client__c <- NULL
+cleaned_data$Race__c <- NULL #illegal to inquire about in a hiring situation
+cleaned_data$Gender__c <- NULL #illegal to inquire about in a hiring situation
 cleaned_data$Date_of_Service_EntryNew__c <- NULL
 cleaned_data$Date_of_SeparationNew__c <- NULL
 cleaned_data$Date_of_Service_start <- NULL
 cleaned_data$Date_of_Service_end <- NULL
 cleaned_data$Length_of_Service <- NULL
-cleaned_data$Discharge_Type__c <- NULL
-cleaned_data$Race__c <- NULL
-cleaned_data$Gender__c <- NULL
-
+cleaned_data$Discharge_Type__c <- NULL  #illegal to inquire about in a hiring situation
 
 colnames(cleaned_data)
-#making sure all remaining columns are factors
-cleaned_data$Race__c <- as.factor(cleaned_data$Race__c)
-cleaned_data$Gender__c <- as.factor(cleaned_data$Gender__c)
+
+#making sure all remaining columns are coerced to the correct data type
 cleaned_data$Service_Branch__c <- as.factor(cleaned_data$Service_Branch__c)
 cleaned_data$Service_Rank__c <- as.factor(cleaned_data$Service_Rank__c)
 cleaned_data$Reserves_National_Guard__c <- as.factor(cleaned_data$Reserves_National_Guard__c)
 cleaned_data$Foreign_Service__c <- as.factor(cleaned_data$Foreign_Service__c)
 cleaned_data$Purple_Heart_Recipient__c <- as.factor(cleaned_data$Purple_Heart_Recipient__c)
 cleaned_data$Bilingual__c <- as.factor(cleaned_data$Bilingual__c)
-cleaned_data$Discharge_Type__c <- as.factor(cleaned_data$Discharge_Type__c)
+cleaned_data$Willing_to_Relocate__c <- as.factor(cleaned_data$Willing_to_Relocate__c)
+cleaned_data$Enrolled_in_School__c <- as.factor(cleaned_data$Enrolled_in_School__c)
+cleaned_data$priority_veteran__c <- as.factor(cleaned_data$priority_veteran__c)
+cleaned_data$Highest_Level_of_Education_Completed__c <- as.factor(cleaned_data$Highest_Level_of_Education_Completed__c)
+cleaned_data$Status__c <- as.factor(cleaned_data$Status__c)
 cleaned_data$Hire_Heroes_USA_Confirmed_Hire__c <- as.factor(cleaned_data$Hire_Heroes_USA_Confirmed_Hire__c)
 cleaned_data$last_service_era <- as.factor(cleaned_data$last_service_era)
 cleaned_data$Length_of_Service_bin <- as.factor(cleaned_data$Length_of_Service_bin)
 
 summary(cleaned_data)
 
-#Narrowing down to only complete cases
-complete_data <- cleaned_data[complete.cases(cleaned_data),]
+#Length of service bin is the most sparse column. We can filter out all the observations with NA in this column.
+cleaned_data <- filter(cleaned_data, !is.na(Length_of_Service_bin))
+summary(cleaned_data)
+
+#Purple_Heart_Recipient__c is still highly sparse.  We will drop it.
+cleaned_data$Purple_Heart_Recipient__c <- NULL 
+colnames(cleaned_data)
+
+#now all columns in the data set have <20% missing values.  We can use MICE to impute missing values for these. 
+#install.packages("mice")
+library(mice)
+
+#This line takes about 90 minutes to run using the CART method
+tempData <- mice(cleaned_data[,-11],m=1,maxit=50,meth='cart',seed=42)
+summary(tempData)
+
+completedData <- complete(tempData,1)
+summary(completedData)
+
+# when using MICE we, took out our dependent variable from the data set to be imputed.  Now we need to asdd it back
+final_data <- cbind(completedData, cleaned_data[11])
+
+
+# #Narrowing down to only complete cases
+# complete_data <- cleaned_data[complete.cases(cleaned_data),]
 
 #Checking out the distribution of the target variable
-summary(complete_data$Hire_Heroes_USA_Confirmed_Hire__c)
+summary(final_data$Hire_Heroes_USA_Confirmed_Hire__c)
 
-fwrite(complete_data, file = "Data/complete_data1.csv")
+fwrite(final_data, file = "complete_data1.csv")
 
 

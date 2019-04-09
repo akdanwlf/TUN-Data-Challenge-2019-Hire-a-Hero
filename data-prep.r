@@ -1,10 +1,10 @@
 setwd('C:\\Users\\Hansen\\OneDrive\\UNC-Charlotte Data Science and Business Analytics\\Spring 2019\\DSBA 6211 - Advanced Business Analysis\\Group Project\\TUN-Data-Challenge-2019-Hire-a-Hero')
-
 #Loading our data set. We can use fread instead of read.csv becasue it is much faster. 
 #we will also convert our data to a tibble data frame to make manipulating it easier
 library(data.table)
 
 data_contact <- fread("SalesForce_Contact.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
+data_contact <- fread("Data/SalesForce_Contact.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
 
 #install.packages("tidyverse")
 library(tidyverse)

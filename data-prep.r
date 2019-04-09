@@ -3,7 +3,6 @@ setwd('C:\\Users\\Hansen\\OneDrive\\UNC-Charlotte Data Science and Business Anal
 #we will also convert our data to a tibble data frame to make manipulating it easier
 library(data.table)
 
-data_contact <- fread("SalesForce_Contact.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
 data_contact <- fread("Data/SalesForce_Contact.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
 
 #install.packages("tidyverse")

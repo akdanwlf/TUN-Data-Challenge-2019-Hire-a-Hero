@@ -1,4 +1,4 @@
-setwd('<INSERT WORKING DIRECTORY HERE>')
+setwd('C:\\Users\\Hansen\\OneDrive\\UNC-Charlotte Data Science and Business Analytics\\Spring 2019\\DSBA 6211 - Advanced Business Analysis\\Group Project\\TUN-Data-Challenge-2019-Hire-a-Hero')
 
 #Loading our data set. We can use fread instead of read.csv becasue it is much faster. 
 #we will also convert our data to a tibble data frame to make manipulating it easier
@@ -209,27 +209,59 @@ summary(cleaned_data)
 cleaned_data$Purple_Heart_Recipient__c <- NULL 
 colnames(cleaned_data)
 
-#now all columns in the data set have <20% missing values.  We can use MICE to impute missing values for these. 
+#Hansen's Mice code___________________________________________________________________________________________________________
+#now all columns in the data set have <20% missing values.  We can use MICE to impute missing values for these.
 #install.packages("mice")
+# library(mice)
+# 
+# #This line takes about 90 minutes to run using the CART method
+# tempData <- mice(cleaned_data[,-11],m=1,maxit=50,meth='cart',seed=42)
+# summary(tempData)
+# 
+# completedData <- complete(tempData,1)
+# summary(completedData)
+# 
+# # when using MICE we, took out our dependent variable from the data set to be imputed.  Now we need to asdd it back
+# final_data <- cbind(completedData, cleaned_data[11])
+#______________________________________________________________________________________________________________________________
+
+#impute
 library(mice)
-
-#This line takes about 90 minutes to run using the CART method
-tempData <- mice(cleaned_data[,-11],m=1,maxit=50,meth='cart',seed=42)
-summary(tempData)
-
-completedData <- complete(tempData,1)
-summary(completedData)
-
-# when using MICE we, took out our dependent variable from the data set to be imputed.  Now we need to asdd it back
-final_data <- cbind(completedData, cleaned_data[11])
+init = mice(cleaned_data, maxit=0) 
+meth = init$method
+predM = init$predictorMatrix
 
 
-# #Narrowing down to only complete cases
-# complete_data <- cleaned_data[complete.cases(cleaned_data),]
+meth[c("Service_Branch__c")]="polyreg"
+meth[c("Service_Rank__c")]="polyr"
+meth[c("Reserves_National_Guard__c")]="logreg"
+meth[c("Foreign_Service__c")]="polyreg"
+meth[c("Bilingual__c")]="logreg"
+meth[c("Willing_to_Relocate__c")]="logreg"
+meth[("Enrolled_in_School__c")]="logreg"
+meth[c("priority_veteran__c")]="logreg"
+meth[c("Highest_Level_of_Education_Completed__c")]="polyr"
+meth[c("Status__c")]="polyreg"
+meth[c("last_service_era")]="polyreg"
+meth[c("Length_of_Service_bin")]="polyr"
+#meth[c("Purple_Heart_Recipient__c")]="polyreg"
+
+imputed = mice(cleaned_data, maxit = 10, method=meth, predictorMatrix=predM, m=1, seed = 42)
+
+cleaned_data_im <- complete(imputed)
+
+summary(cleaned_data_im)
+
+sessionInfo() 
+
+
+#Narrowing down to only complete cases
+#complete_data <- cleaned_data[complete.cases(cleaned_data),]
 
 #Checking out the distribution of the target variable
 summary(final_data$Hire_Heroes_USA_Confirmed_Hire__c)
 
 fwrite(final_data, file = "complete_data1.csv")
+
 
 

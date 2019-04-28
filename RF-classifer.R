@@ -1,4 +1,4 @@
-library(data.table)
+library(data.table) 
 data <- fread("Data/complete_data_blank.csv", sep=",", header=T, strip.white = T, na.strings = c("NA","NaN","","?"))
 
 summary(data)
